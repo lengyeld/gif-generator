@@ -1,4 +1,11 @@
+import threading
+import time
+from queue import Queue
+from typing import List
+
 import imageio
+import imutils
+from imutils.video.count_frames import count_frames
 
 
 GIF_FIXED_FRAMES = 50
@@ -8,37 +15,32 @@ def main():
     print("Starting...")
     reader = imageio.get_reader("sample.mp4")
 
-    total_frames = get_total_frames(reader)
+    total_frames = count_frames("sample.mp4")
     step = round(total_frames / GIF_FIXED_FRAMES)
-    count = 0
+
+    processed_frames = Queue(maxsize=GIF_FIXED_FRAMES)
+
+    indexes = [i for i in range(0, total_frames, step)]
+    threading.Thread(
+        target=read_frames,
+        args=(reader, processed_frames, indexes),
+    ).start()
 
     with imageio.get_writer("sample.gif", mode="I") as writer:
-        for (i, img) in enumerate(reader):
-            if i % step == 0:
-                count += 1
-                print(f"Frame #{i}")
-                writer.append_data(img)
-
-    print(f"count: {count}")
+        for i in indexes:
+            frame = processed_frames.get(block=True)
+            print(f"Writing frame #{i}")
+            writer.append_data(frame)
 
 
-def get_total_frames(reader):
-    """
-    Won't always return with the exact number!
-    If it can not get the total frames from reader.get_length() then
-    it will try to guess it based on FPS and video duration.
-    """
-
-    total_frames = reader.get_length()
-    if total_frames != float("inf"):
-        return total_frames
-
-    meta = reader.get_meta_data()
-    fps = meta.get("fps")
-    duration = meta.get("duration")
-
-    return round(fps * duration)
+def read_frames(reader, processed_frames: Queue, indexes: List[int]):
+    for index in indexes:
+        frame = reader.get_data(index)
+        frame = imutils.resize(frame, width=600)
+        processed_frames.put(frame)
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    print("--- %s seconds ---" % (time.time() - start_time))
