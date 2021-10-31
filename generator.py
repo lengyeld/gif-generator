@@ -26,7 +26,6 @@ def generate_gif(video: pathlib.Path, frame_number: int):
     with imageio.get_writer(file_name, mode="I") as writer:
         for i in indexes:
             frame = processed_frames.get(block=True)
-            print(f"Writing frame #{i}")
             writer.append_data(frame)
 
 

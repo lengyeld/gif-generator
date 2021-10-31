@@ -1,8 +1,8 @@
 import pathlib
-import time
 
 import click
 from generator import generate_gif
+from yaspin import yaspin
 
 
 @click.command()
@@ -15,10 +15,10 @@ from generator import generate_gif
     help="The number of frames that will be used for the GIF",
 )
 def main(video_path, frame_number):
-    print("Starting...")
-    start_time = time.time()
-    generate_gif(video_path, frame_number)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    with yaspin(text="Generating GIF...") as spinner:
+        generate_gif(video_path, frame_number)
+        spinner.text = ""
+        spinner.ok("✅ GIF generated")
 
 
 if __name__ == "__main__":
