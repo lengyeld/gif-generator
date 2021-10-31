@@ -1,6 +1,6 @@
 import pathlib
 import threading
-from queue import Queue
+from multiprocessing import Queue
 from typing import List
 
 import imageio
@@ -20,11 +20,12 @@ def generate_gif(video: pathlib.Path, frame_number: int):
     threading.Thread(
         target=_read_frames,
         args=(reader, processed_frames, indexes),
+        daemon=True,
     ).start()
 
     file_name = video.with_suffix(".gif")
     with imageio.get_writer(file_name, mode="I") as writer:
-        for i in indexes:
+        for _ in indexes:
             frame = processed_frames.get(block=True)
             writer.append_data(frame)
 
