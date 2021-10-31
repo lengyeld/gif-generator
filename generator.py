@@ -7,16 +7,14 @@ import imageio
 import imutils
 from imutils.video.count_frames import count_frames
 
-GIF_FIXED_FRAMES = 50
 
-
-def generate_gif(video: pathlib.Path):
+def generate_gif(video: pathlib.Path, frame_number: int):
     reader = imageio.get_reader(video)
 
     total_frames = count_frames(str(video))
-    step = round(total_frames / GIF_FIXED_FRAMES)
+    step = round(total_frames / frame_number)
 
-    processed_frames = Queue(maxsize=GIF_FIXED_FRAMES)
+    processed_frames = Queue(maxsize=frame_number)
 
     indexes = [i for i in range(0, total_frames, step)]
     threading.Thread(
