@@ -1,8 +1,9 @@
 import pathlib
 
 import click
-from generator import generate_gif
 from yaspin import yaspin
+
+from generator import generate_gif, generate_thumbnail
 
 
 @click.command()
@@ -17,8 +18,12 @@ from yaspin import yaspin
 def main(video_path, frame_number):
     with yaspin(text="Generating GIF...") as spinner:
         generate_gif(video_path, frame_number)
+        spinner.write("✅ GIF generated")
+
+        generate_thumbnail(video_path)
+        spinner.write("✅ Thumbnail generated")
+
         spinner.text = ""
-        spinner.ok("✅ GIF generated")
 
 
 if __name__ == "__main__":

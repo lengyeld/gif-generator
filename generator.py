@@ -18,7 +18,7 @@ def generate_gif(video: pathlib.Path, frame_number: int):
 
     indexes = [i for i in range(0, total_frames, step)]
     threading.Thread(
-        target=read_frames,
+        target=_read_frames,
         args=(reader, processed_frames, indexes),
     ).start()
 
@@ -29,7 +29,17 @@ def generate_gif(video: pathlib.Path, frame_number: int):
             writer.append_data(frame)
 
 
-def read_frames(reader, processed_frames: Queue, indexes: List[int]):
+def generate_thumbnail(video: pathlib.Path):
+    reader = imageio.get_reader(video)
+
+    frame = reader.get_data(0)
+    frame = imutils.resize(frame, width=600)
+
+    file_name = video.with_suffix(".jpg")
+    imageio.imwrite(file_name, frame)
+
+
+def _read_frames(reader, processed_frames: Queue, indexes: List[int]):
     for index in indexes:
         frame = reader.get_data(index)
         frame = imutils.resize(frame, width=600)
